@@ -1,7 +1,28 @@
 {
   "orders": [
     {
-      "dummie": 0
+      "dummie": 0,
+      "id": 1
+    },
+    {
+      "ingredients": {
+        "salad": 2,
+        "bacon": 3,
+        "cheese": 1,
+        "meat": 2
+      },
+      "price": 10.100000000000001,
+      "id": 2
+    },
+    {
+      "ingredients": {
+        "salad": 2,
+        "bacon": 3,
+        "cheese": 1,
+        "meat": 2
+      },
+      "price": 10.100000000000001,
+      "id": 3
     }
   ]
 }
