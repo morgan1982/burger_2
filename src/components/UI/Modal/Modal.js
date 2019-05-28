@@ -2,6 +2,10 @@ import React from 'react';
 import classes from './Modal.css';
 import Backdrop from '../Backdrop/Backdrop';
 
+const areEqual = (prevProps, nextProps) => {
+  return prevProps.show === nextProps.show
+} 
+
 const modal = props => (
   <React.Fragment>
     <Backdrop show={ props.show }
@@ -16,4 +20,4 @@ const modal = props => (
   </React.Fragment>
 );
 
-export default modal;
+export default React.memo(modal, areEqual);

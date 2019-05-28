@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import orders from '../../api/order';
 
 import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/BuildControls/BuildControls';
@@ -22,7 +23,15 @@ class BurgerBuilder extends Component {
     },
     total: 4,
     purchasable: false,
-    purchasing: false
+    purchasing: false,
+    id: 0
+  }
+
+  async componentDidMount() {
+    const response = await orders.get('/orders')
+    const records = response.data;
+    const id = records[records.length - 1].id;
+    this.setState({ id })
   }
 
   updatePurchaseState (ingredients) {
@@ -78,6 +87,15 @@ class BurgerBuilder extends Component {
 
   purchaseContinueHandler = () => {
     alert('continuing to checkout')
+        const { ingredients, total, id } = this.state
+    const order = {
+      ingredients,
+      price: total,
+      id: id + 1 
+    }
+    console.log(order);
+    orders.post('/orders', { ...order })
+    // todo: close the modal after the order is send
   }
 
   render() {
