@@ -3,7 +3,7 @@ import classes from './Modal.css';
 import Backdrop from '../Backdrop/Backdrop';
 
 const areEqual = (prevProps, nextProps) => {
-  return prevProps.show === nextProps.show
+  return prevProps.show === nextProps.show && prevProps.children === nextProps.children
 } 
 
 const modal = props => (

@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import orders from '../../api/order';
+import orders, { firebase } from '../../api/order';
 
 import Burger from '../../components/Burger/Burger';
 import BuildControls from '../../components/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
+import ProgressBar from '../../components/UI/ProgressBar/ProgressBar';
 
 const INGREDIENT_PRICES = {
   salad: 0.5,
@@ -12,6 +13,24 @@ const INGREDIENT_PRICES = {
   meat: 1.3,
   bacon: 0.7
 }
+
+// axios middleware
+orders.interceptors.request.use(req => {
+  console.log("request", req);
+  return req;
+}, error => {
+  console.log(error);
+  return Promise.reject(error);
+})  
+
+orders.interceptors.response.use(res => {
+  console.log("response", res);
+  return res
+}, err => {
+  console.log(err);
+  return Promise.reject(err)
+})
+
 
 class BurgerBuilder extends Component {
   state = {
@@ -24,14 +43,32 @@ class BurgerBuilder extends Component {
     total: 4,
     purchasable: false,
     purchasing: false,
-    id: 0
+    id: 0,
+    error: null,
+    loading: false,
+    percentage: 0,
+    currentcount: 100,
+    intervalId: null
   }
 
   async componentDidMount() {
-    const response = await orders.get('/orders')
-    const records = response.data;
-    const id = records[records.length - 1].id;
-    this.setState({ id })
+    let response;
+    try {
+      response = await orders.get('/orders')
+    } catch(error) {
+      this.setState({ error })
+    }
+    const records = response ? response.data : [];
+    let lastId = 0;
+    if (records.length) {
+      lastId = records[records.length - 1].id;
+      console.log("last id", lastId);
+    }
+
+    this.setState({ id: lastId })
+
+    let intervalId = setInterval(this.timer, 20);
+    this.setState({ intervalId });
   }
 
   updatePurchaseState (ingredients) {
@@ -86,16 +123,60 @@ class BurgerBuilder extends Component {
   }
 
   purchaseContinueHandler = () => {
-    alert('continuing to checkout')
-        const { ingredients, total, id } = this.state
+    this.setState({ loading: true })
+    const { ingredients, total, id } = this.state
     const order = {
       ingredients,
-      price: total,
+      price: total.toFixed(2),
       id: id + 1 
     }
-    console.log(order);
+    this.setState({ id: order.id })
     orders.post('/orders', { ...order })
+      .then( res => console.log(res));
     // todo: close the modal after the order is send
+    const fireOrder = {
+      ingredients:  this.state.ingredients,
+      price: this.state.total,
+      customer: {
+        name: 'Ziner Philip',
+        address: {
+          street: 'Test street',
+          zipCode: '41352323',
+          country: 'Greece'
+        },
+        email: 'test@test.com'
+      },
+      deliveryMethod: 'fastest'
+    }
+
+    firebase.post('/orders.json', fireOrder)
+      .then( res => {
+        this.setState({ loading: false, purchasing: false })
+      })
+      .catch( err => {
+        this.setState({ loading: false, purchasing: false })
+      })
+  }
+
+  timer = () => {
+    let count = this.state.currentcount -1;
+    if (count > 0) {
+      this.setState({ currentcount: count })
+    } else {
+      clearInterval(this.state.intervalId);
+    }
+  }
+
+  orderSummaryHandler = () => {
+    if (this.state.loading) {
+      return <ProgressBar percentage={ this.state.currentcount } />
+    }
+    return (
+      <OrderSummary  ingredients={ this.state.ingredients }
+      purchaseCancel={ this.purchaseCancelHandler }
+      purchaseContinue={ this.purchaseContinueHandler }
+      price={ this.state.total }/>
+    )
   }
 
   render() {
@@ -105,12 +186,10 @@ class BurgerBuilder extends Component {
     }
     return (
       <React.Fragment>
+        <ProgressBar percentage={ this.state.currentcount }/>
         <Modal show={ this.state.purchasing }
                modalClosed={ this.purchaseCancelHandler }>
-          <OrderSummary  ingredients={ this.state.ingredients }
-                         purchaseCancel={ this.purchaseCancelHandler }
-                         purchaseContinue={ this.purchaseContinueHandler }
-                         price={ this.state.total }/>
+              { this.orderSummaryHandler() }
         </Modal>
         <Burger ingredients={ this.state.ingredients }/>
         <BuildControls ingredientAdded={ this.addIngredientHandler }

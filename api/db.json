@@ -1,28 +1,74 @@
 {
   "orders": [
     {
-      "dummie": 0,
-      "id": 1
+      "ingredients": {
+        "salad": 2,
+        "bacon": 2,
+        "cheese": 1,
+        "meat": 0
+      },
+      "price": 6.800000000000001,
+      "id": 5
+    },
+    {
+      "ingredients": {
+        "salad": 0,
+        "bacon": 0,
+        "cheese": 0,
+        "meat": 3
+      },
+      "price": "7.90",
+      "id": 6
     },
     {
       "ingredients": {
         "salad": 2,
-        "bacon": 3,
+        "bacon": 1,
         "cheese": 1,
-        "meat": 2
+        "meat": 1
       },
-      "price": 10.100000000000001,
-      "id": 2
+      "price": "7.40",
+      "id": 7
     },
     {
       "ingredients": {
-        "salad": 2,
-        "bacon": 3,
-        "cheese": 1,
-        "meat": 2
+        "salad": 0,
+        "bacon": 2,
+        "cheese": 2,
+        "meat": 0
       },
-      "price": 10.100000000000001,
-      "id": 3
+      "price": "6.20",
+      "id": 8
+    },
+    {
+      "ingredients": {
+        "salad": 1,
+        "bacon": 1,
+        "cheese": 0,
+        "meat": 0
+      },
+      "price": "5.20",
+      "id": 9
+    },
+    {
+      "ingredients": {
+        "salad": 0,
+        "bacon": 1,
+        "cheese": 2,
+        "meat": 0
+      },
+      "price": "5.50",
+      "id": 10
+    },
+    {
+      "ingredients": {
+        "salad": 0,
+        "bacon": 1,
+        "cheese": 4,
+        "meat": 0
+      },
+      "price": "6.30",
+      "id": 11
     }
   ]
 }
