@@ -3,6 +3,10 @@ import classes from './Modal.css';
 import Backdrop from '../Backdrop/Backdrop';
 
 const areEqual = (prevProps, nextProps) => {
+  console.log("prev__ check", prevProps.children === nextProps.children);
+  console.log("prev show", prevProps.show === nextProps.show)
+  // console.log("next__", nextProps.children);
+
   return prevProps.show === nextProps.show && prevProps.children === nextProps.children
 } 
 

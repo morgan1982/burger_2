@@ -6,6 +6,8 @@ import BuildControls from '../../components/BuildControls/BuildControls';
 import Modal from '../../components/UI/Modal/Modal';
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary';
 import ProgressBar from '../../components/UI/ProgressBar/ProgressBar';
+import Spinner from '../../components/UI/Spinner/Spinner';
+import withErrorHandler from '../../withErrorHandler/withErrorHandler'; 
 
 const INGREDIENT_PRICES = {
   salad: 0.5,
@@ -34,12 +36,7 @@ orders.interceptors.response.use(res => {
 
 class BurgerBuilder extends Component {
   state = {
-    ingredients: {
-      salad: 0,
-      bacon: 0,
-      cheese: 0,
-      meat: 0
-    },
+    ingredients: null,
     total: 4,
     purchasable: false,
     purchasing: false,
@@ -52,23 +49,30 @@ class BurgerBuilder extends Component {
   }
 
   async componentDidMount() {
-    let response;
-    try {
-      response = await orders.get('/orders')
-    } catch(error) {
-      this.setState({ error })
-    }
-    const records = response ? response.data : [];
-    let lastId = 0;
-    if (records.length) {
-      lastId = records[records.length - 1].id;
-      console.log("last id", lastId);
-    }
+    // let response;
+    // try {
+    //   response = await orders.get('/orders')
+    // } catch(error) {
+    //   this.setState({ error })
+    // }
 
-    this.setState({ id: lastId })
+    // const records = response ? response.data : [];
+    // let lastId = 0;
+    // if (records.length) {
+    //   lastId = records[records.length - 1].id;
+    //   console.log("last id", lastId);
+    // }
 
-    let intervalId = setInterval(this.timer, 20);
-    this.setState({ intervalId });
+    // this.setState({ id: lastId })
+
+    // fetch from firebase
+    const fireResponse = await firebase.get('/ingredients.json')
+      .then(res => { 
+        this.setState({ ingredients: res.data })
+      }).catch(er => this.setState({error: er}))
+
+    // let intervalId = setInterval(this.timer, 5);
+    // this.setState({ intervalId });
   }
 
   updatePurchaseState (ingredients) {
@@ -131,8 +135,9 @@ class BurgerBuilder extends Component {
       id: id + 1 
     }
     this.setState({ id: order.id })
-    orders.post('/orders', { ...order })
-      .then( res => console.log(res));
+
+    // orders.post('/orders', { ...order })
+    //   .then( res => console.log(res));
     // todo: close the modal after the order is send
     const fireOrder = {
       ingredients:  this.state.ingredients,
@@ -168,8 +173,11 @@ class BurgerBuilder extends Component {
   }
 
   orderSummaryHandler = () => {
+    if(!this.state.ingredients) {
+      return <Spinner/>
+    }
     if (this.state.loading) {
-      return <ProgressBar percentage={ this.state.currentcount } />
+      return <Spinner />
     }
     return (
       <OrderSummary  ingredients={ this.state.ingredients }
@@ -184,24 +192,34 @@ class BurgerBuilder extends Component {
     for (let key in disabledInfo) {
       disabledInfo[key] = disabledInfo[key] <= 0;
     }
+    console.log('ERROR', this.state.error)
+    let burger = this.state.error ? <p>cannot fetch data</p> : <Spinner/>
+    if (this.state.ingredients) {
+      burger = (
+        <React.Fragment>
+          <Burger ingredients={ this.state.ingredients }/>
+          <BuildControls ingredientAdded={ this.addIngredientHandler }
+                        ingredientRemoved={ this.removeIngredientHandler }
+                        disabledInfo={ disabledInfo }
+                        price={ this.state.total }
+                        purchasable={ this.state.purchasable }
+                        ordered={ this.purchaseHandler }
+          />
+        </React.Fragment>
+      )
+    } 
+
     return (
       <React.Fragment>
-        <ProgressBar percentage={ this.state.currentcount }/>
         <Modal show={ this.state.purchasing }
                modalClosed={ this.purchaseCancelHandler }>
               { this.orderSummaryHandler() }
         </Modal>
-        <Burger ingredients={ this.state.ingredients }/>
-        <BuildControls ingredientAdded={ this.addIngredientHandler }
-                       ingredientRemoved={ this.removeIngredientHandler }
-                       disabledInfo={ disabledInfo }
-                       price={ this.state.total }
-                       purchasable={ this.state.purchasable }
-                       ordered={ this.purchaseHandler }
-        />
+        { burger }
       </React.Fragment>
     );
   }
 }
 
-export default BurgerBuilder;
+// export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder, firebase);

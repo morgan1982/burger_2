@@ -16,7 +16,7 @@ class orderSummary extends Component {
   } 
 
   componentDidMount() {
-    console.log('component mounted');
+    
   }
 
   render() {
